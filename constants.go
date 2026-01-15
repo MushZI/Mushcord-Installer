@@ -1,15 +1,14 @@
-/*
- * SPDX-License-Identifier: GPL-3.0
- * Mushcord Installer, a cross platform gui/cli app for installing Mushcord
- * Copyright (c) 2023 Vendicated and Vencord contributors
- */
-
 package main
 
 import (
 	"image/color"
 	"vencord/buildinfo"
 )
+
+// Personnalisation Mushcord
+const Name = "Mushcord Installer"
+const DataDir = "mushcord"
+const AsarName = "mushcord.asar"
 
 const ReleaseUrl = "https://api.github.com/repos/MushZI/MushZicord/releases/latest"
 const ReleaseUrlFallback = "https://github.com/MushZI/MushZicord/releases/latest"
@@ -26,20 +25,9 @@ var (
 )
 
 var LinuxDiscordNames = []string{
-	"Discord",
-	"DiscordPTB",
-	"DiscordCanary",
-	"DiscordDevelopment",
-	"discord",
-	"discordptb",
-	"discordcanary",
-	"discorddevelopment",
-	"discord-ptb",
-	"discord-canary",
-	"discord-development",
-	// Flatpak
-	"com.discordapp.Discord",
-	"com.discordapp.DiscordPTB",
-	"com.discordapp.DiscordCanary",
-	"com.discordapp.DiscordDevelopment",
+	"Discord", "DiscordPTB", "DiscordCanary", "DiscordDevelopment",
+	"discord", "discordptb", "discordcanary", "discorddevelopment",
+	"discord-ptb", "discord-canary", "discord-development",
+	"com.discordapp.Discord", "com.discordapp.DiscordPTB",
+	"com.discordapp.DiscordCanary", "com.discordapp.DiscordDevelopment",
 }
