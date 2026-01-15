@@ -2,7 +2,7 @@
 
 /*
  * SPDX-License-Identifier: GPL-3.0
- * Vencord Installer, a cross platform gui/cli app for installing Vencord
+ * Mushcord Installer, a cross platform gui/cli app for installing Mushcord
  * Copyright (c) 2023 Vendicated and Vencord contributors
  */
 
@@ -42,8 +42,8 @@ var (
 	didAutoComplete        bool
 
 	modalId      = 0
-	modalTitle   = "Oh No :("
-	modalMessage = "You should never see this"
+	modalTitle   = "Oh Non :("
+	modalMessage = "Vous ne devriez jamais voir ce message"
 
 	acceptedOpenAsar   bool
 	showedUpdatePrompt bool
@@ -80,7 +80,7 @@ func main() {
 		os.Setenv("GDK_DPI_SCALE", "1")
 	}
 
-	win = g.NewMasterWindow("Equilotl", 1200, 800, linuxFlags)
+	win = g.NewMasterWindow("Mushcord Installer", 1200, 800, linuxFlags)
 
 	icon, _, err := image.Decode(bytes.NewReader(iconBytes))
 	if err != nil {
@@ -126,7 +126,7 @@ func InstallLatestBuilds() (err error) {
 
 	err = installLatestBuilds()
 	if err != nil {
-		ShowModal("Uh Oh!", "Failed to install the latest Equicord builds from GitHub:\n"+err.Error())
+		ShowModal("Uh Oh!", "Échec de l'installation des derniers builds de Mushcord depuis GitHub :\n"+err.Error())
 	}
 	return
 }
@@ -159,14 +159,14 @@ func handleOpenAsarConfirmed() {
 	if choice != nil {
 		if choice.IsOpenAsar() {
 			if err := choice.UninstallOpenAsar(); err != nil {
-				handleErr(choice, err, "uninstall OpenAsar from")
+				handleErr(choice, err, "désinstaller OpenAsar de")
 			} else {
 				g.OpenPopup("#openasar-unpatched")
 				g.Update()
 			}
 		} else {
 			if err := choice.InstallOpenAsar(); err != nil {
-				handleErr(choice, err, "install OpenAsar on")
+				handleErr(choice, err, "installer OpenAsar sur")
 			} else {
 				g.OpenPopup("#openasar-patched")
 				g.Update()
@@ -179,20 +179,19 @@ func handleErr(di *DiscordInstall, err error, action string) {
 	if errors.Is(err, os.ErrPermission) {
 		switch runtime.GOOS {
 		case "windows":
-			err = errors.New("Permission denied. Make sure your Discord is fully closed (from the tray)!")
+			err = errors.New("Permission refusée. Assurez-vous que Discord est totalement fermé (même dans la barre des tâches) !")
 		case "darwin":
-			// FIXME: This text is not selectable which is a bit mehhh
 			command := "sudo chown -R \"${USER}:wheel\" " + di.path
-			err = errors.New("Permission denied. Please grant the installer Full Disk Access in the system settings (privacy & security page).\n\nIf that also doesn't work, try running the following command in your terminal:\n" + command)
+			err = errors.New("Permission refusée. Veuillez accorder l'accès complet au disque à l'installateur dans les réglages système.\n\nSi cela ne fonctionne pas, essayez cette commande :\n" + command)
 		case "linux":
 			command := "sudo chown -R \"$USER:$USER\" " + di.path
-			err = errors.New("Permission denied. Try to run the installer with sudo privileges.\n\nIf that also doesn't work, try running the following command in your terminal:\n" + command)
+			err = errors.New("Permission refusée. Essayez de lancer l'installateur avec les privilèges sudo.\n\nCommande recommandée :\n" + command)
 		default:
-			err = errors.New("Permission denied. Maybe try running me as Administrator/Root?")
+			err = errors.New("Permission refusée. Essayez de lancer en tant qu'Administrateur.")
 		}
 	}
 
-	ShowModal("Failed to "+action+" this Install", err.Error())
+	ShowModal("Échec de l'action : "+action, err.Error())
 }
 
 func HandleScuffedInstall() {
@@ -221,24 +220,20 @@ func (di *DiscordInstall) Unpatch() {
 func onCustomInputChanged() {
 	p := customDir
 	if len(p) != 0 {
-		// Select the custom option for people
 		radioIdx = customChoiceIdx
 	}
 
 	dir := path.Dir(p)
-
 	isNewDir := strings.HasSuffix(p, "/")
 	wentUpADir := !isNewDir && dir != autoCompleteDir
 
 	if isNewDir || wentUpADir {
 		autoCompleteDir = dir
-		// reset all the funnies
 		autoCompleteIdx = 0
 		lastAutoComplete = ""
 		autoCompleteFile = ""
 		autoCompleteCandidates = nil
 
-		// Generate autocomplete items
 		files, err := os.ReadDir(dir)
 		if err == nil {
 			for _, file := range files {
@@ -246,7 +241,6 @@ func onCustomInputChanged() {
 			}
 		}
 	} else if !didAutoComplete {
-		// reset auto complete and update our file
 		autoCompleteFile = path.Base(p)
 		lastAutoComplete = ""
 	}
@@ -258,13 +252,8 @@ func onCustomInputChanged() {
 	didAutoComplete = false
 }
 
-// go can you give me []any?
-// to pass to giu RangeBuilder?
-// yeeeeees
-// actually returns []string like a boss
 func makeAutoComplete() []any {
 	input := strings.ToLower(autoCompleteFile)
-
 	var candidates []any
 	for _, e := range autoCompleteCandidates {
 		file := strings.ToLower(e)
@@ -313,8 +302,7 @@ func RawInfoModal(id, title, description string, isOpenAsar bool) g.Widget {
 						&CondWidget{id == "#scuffed-install", func() g.Widget {
 							return g.Column(
 								g.Dummy(0, 10),
-								g.Button("Take me there!").OnClick(func() {
-									// this issue only exists on windows so using Windows specific path is oki
+								g.Button("Emmenez-moi là-bas !").OnClick(func() {
 									username := os.Getenv("USERNAME")
 									programData := os.Getenv("PROGRAMDATA")
 									g.OpenURL("file://" + path.Join(programData, username))
@@ -325,13 +313,13 @@ func RawInfoModal(id, title, description string, isOpenAsar bool) g.Widget {
 						&CondWidget{isOpenAsar,
 							func() g.Widget {
 								return g.Row(
-									g.Button("Accept").
+									g.Button("Accepter").
 										OnClick(func() {
 											acceptedOpenAsar = true
 											g.CloseCurrentPopup()
 										}).
 										Size(100, 30),
-									g.Button("Cancel").
+									g.Button("Annuler").
 										OnClick(func() {
 											g.CloseCurrentPopup()
 										}).
@@ -361,19 +349,18 @@ func UpdateModal() g.Widget {
 				Layout(
 					g.Align(g.AlignCenter).To(
 						g.Style().SetFontSize(30).To(
-							g.Label("Your Installer is outdated!"),
+							g.Label("Votre installateur est obsolète !"),
 						),
 						g.Style().SetFontSize(20).To(
 							g.Label(
-								"Would you like to update now?\n\n"+
-									"Once you press Update Now, the new installer will automatically be downloaded.\n"+
-									"The installer will temporarily seem unresponsive. Just wait!\n"+
-									"Once the update is done, the Installer will automatically reopen.\n\n"+
-									"On MacOs, Auto updates are not supported, so it will instead open in browser.",
+								"Voulez-vous mettre à jour maintenant ?\n\n"+
+									"Le nouvel installateur sera téléchargé automatiquement.\n"+
+									"L'outil peut sembler figé quelques instants, patientez !\n"+
+									"Une fois terminé, Mushcord Installer redémarrera seul.",
 							),
 						),
 						g.Row(
-							g.Button("Update Now").
+							g.Button("Mettre à jour").
 								OnClick(func() {
 									if runtime.GOOS == "darwin" {
 										g.CloseCurrentPopup()
@@ -385,15 +372,15 @@ func UpdateModal() g.Widget {
 									g.CloseCurrentPopup()
 
 									if err != nil {
-										ShowModal("Failed to update self!", err.Error())
+										ShowModal("Échec de la mise à jour !", err.Error())
 									} else {
 										if err = RelaunchSelf(); err != nil {
-											ShowModal("Failed to restart self! Please do it manually.", err.Error())
+											ShowModal("Échec du redémarrage ! Faites-le manuellement.", err.Error())
 										}
 									}
 								}).
-								Size(100, 30),
-							g.Button("Later").
+								Size(120, 30),
+							g.Button("Plus tard").
 								OnClick(func() {
 									g.CloseCurrentPopup()
 								}).
@@ -435,22 +422,22 @@ func renderInstaller() g.Widget {
 		g.Style().SetFontSize(20).To(
 			renderErrorCard(
 				DiscordYellow,
-				"**Github** and **equicord.org** are the only official places to get Equicord. Any other site claiming to be us is malicious.\n"+
-					"If you downloaded from any other source, you should delete / uninstall everything immediately, run a malware scan and change your Discord password.",
-				90,
+				"**Mushcord** et son dépôt GitHub officiel sont les seuls endroits sûrs pour obtenir ce mod. Toute autre source est potentiellement malveillante. **Ceci est l'installeur officiel de Mushcord, créé par MushZi (dsc: MushZi)**.\n"+
+					"Si vous avez téléchargé cet outil ailleurs, par précaution, supprimez tout, effectuez un scan antivirus et changez votre mot de passe Discord.",
+				110,
 			),
 		),
 
 		g.Dummy(0, 5),
 
 		g.Style().SetFontSize(30).To(
-			g.Label("Please select an install to patch"),
+			g.Label("Veuillez sélectionner une version de Discord"),
 		),
 
 		&CondWidget{len(discords) == 0, func() g.Widget {
-			s := "No Discord installs found. You first need to install Discord."
+			s := "Aucune installation de Discord trouvée. Installez Discord d'abord."
 			if runtime.GOOS == "linux" {
-				s += " snap is not supported."
+				s += " Les versions Snap ne sont pas supportées."
 			}
 			return g.Label(s)
 		}, nil},
@@ -458,16 +445,15 @@ func renderInstaller() g.Widget {
 		g.Style().SetFontSize(20).To(
 			g.RangeBuilder("Discords", discords, func(i int, v any) g.Widget {
 				d := v.(*DiscordInstall)
-				//goland:noinspection GoDeprecation
 				text := strings.Title(d.branch) + " - " + d.path
 				if d.isPatched {
-					text += " [PATCHED]"
+					text += " [PATCHÉ]"
 				}
 				return g.RadioButton(text, radioIdx == i).
 					OnChange(makeRadioOnChange(i))
 			}),
 
-			g.RadioButton("Custom Install Location", radioIdx == customChoiceIdx).
+			g.RadioButton("Emplacement personnalisé", radioIdx == customChoiceIdx).
 				OnChange(makeRadioOnChange(customChoiceIdx)),
 		),
 
@@ -476,39 +462,30 @@ func renderInstaller() g.Widget {
 			SetStyle(g.StyleVarFramePadding, 16, 16).
 			SetFontSize(20).
 			To(
-				g.InputText(&customDir).Hint("The custom location").
+				g.InputText(&customDir).Hint("Chemin personnalisé").
 					Size(w - 16).
 					Flags(g.InputTextFlagsCallbackCompletion).
 					OnChange(onCustomInputChanged).
-					// this library has its own autocomplete but it's broken
 					Callback(
 						func(data imgui.InputTextCallbackData) int32 {
 							if len(candidates) == 0 {
 								return 0
 							}
-							// just wrap around
 							if autoCompleteIdx >= len(candidates) {
 								autoCompleteIdx = 0
 							}
-
-							// used by change handler
 							didAutoComplete = true
-
 							start := len(customDir)
-							// Delete previous auto complete
 							if lastAutoComplete != "" {
 								start -= len(lastAutoComplete)
 								data.DeleteBytes(start, len(lastAutoComplete))
-							} else if autoCompleteFile != "" { // delete partial input
+							} else if autoCompleteFile != "" {
 								start -= len(autoCompleteFile)
 								data.DeleteBytes(start, len(autoCompleteFile))
 							}
-
-							// Insert auto complete
 							lastAutoComplete = candidates[autoCompleteIdx].(string)
 							data.InsertBytes(start, []byte(lastAutoComplete))
 							autoCompleteIdx++
-
 							return 0
 						},
 					),
@@ -526,16 +503,16 @@ func renderInstaller() g.Widget {
 					SetColor(g.StyleColorButton, DiscordGreen).
 					SetDisabled(GithubError != nil).
 					To(
-						g.Button("Install").
+						g.Button("Installer").
 							OnClick(handlePatch).
 							Size((w-40)/4, 50),
-						Tooltip("Patch the selected Discord Install"),
+						Tooltip("Appliquer Mushcord sur la version sélectionnée"),
 					),
 				g.Style().
 					SetColor(g.StyleColorButton, DiscordBlue).
 					SetDisabled(GithubError != nil).
 					To(
-						g.Button("Reinstall / Repair").
+						g.Button("Réparer").
 							OnClick(func() {
 								if IsDevInstall {
 									handlePatch()
@@ -547,44 +524,38 @@ func renderInstaller() g.Widget {
 								}
 							}).
 							Size((w-40)/4, 50),
-						Tooltip("Reinstall & Update Equicord"),
+						Tooltip("Réinstaller et mettre à jour Mushcord"),
 					),
 				g.Style().
 					SetColor(g.StyleColorButton, DiscordRed).
 					To(
-						g.Button("Uninstall").
+						g.Button("Désinstaller").
 							OnClick(handleUnpatch).
 							Size((w-40)/4, 50),
-						Tooltip("Unpatch the selected Discord Install"),
+						Tooltip("Retirer Mushcord de Discord"),
 					),
 				g.Style().
 					SetColor(g.StyleColorButton, Ternary(isOpenAsar, DiscordRed, DiscordGreen)).
 					To(
-						g.Button(Ternary(isOpenAsar, "Uninstall OpenAsar", Ternary(currentDiscord != nil, "Install OpenAsar", "(Un-)Install OpenAsar"))).
+						g.Button(Ternary(isOpenAsar, "Désinstaller OpenAsar", "Installer OpenAsar")).
 							OnClick(handleOpenAsar).
 							Size((w-40)/4, 50),
-						Tooltip("Manage OpenAsar"),
+						Tooltip("Gérer OpenAsar"),
 					),
 			),
 		),
 
-		InfoModal("#patched", "Successfully Patched", "If Discord is still open, fully close it first.\n"+
-			"Then, start it and verify Equicord installed successfully by looking for its category in Discord Settings"),
-		InfoModal("#unpatched", "Successfully Unpatched", "If Discord is still open, fully close it first. Then start it again, it should be back to stock!"),
-		InfoModal("#scuffed-install", "Hold On!", "You have a broken Discord Install.\n"+
-			"Sometimes Discord decides to install to the wrong location for some reason!\n"+
-			"You need to fix this before patching, otherwise Equicord will likely not work.\n\n"+
-			"Use the below button to jump there and delete any folder called Discord or Squirrel.\n"+
-			"If the folder is now empty, feel free to go back a step and delete that folder too.\n"+
-			"Then see if Discord still starts. If not, reinstall it"),
-		RawInfoModal("#openasar-confirm", "OpenAsar", "OpenAsar is an open-source alternative of Discord desktop's app.asar.\n"+
-			"Equicord is in no way affiliated with OpenAsar.\n"+
-			"You're installing OpenAsar at your own risk. If you run into issues with OpenAsar,\n"+
-			"no support will be provided, join the OpenAsar Server instead!\n\n"+
-			"To install OpenAsar, press Accept and click 'Install OpenAsar' again.", true),
-		InfoModal("#openasar-patched", "Successfully Installed OpenAsar", "If Discord is still open, fully close it first. Then start it again and verify OpenAsar installed successfully!"),
-		InfoModal("#openasar-unpatched", "Successfully Uninstalled OpenAsar", "If Discord is still open, fully close it first. Then start it again and it should be back to stock!"),
-		InfoModal("#invalid-custom-location", "Invalid Location", "The specified location is not a valid Discord install.\nMake sure you select the base folder.\n\nHint: Discord snap is not supported. use flatpak or .deb"),
+		InfoModal("#patched", "Patch Réussi", "Si Discord est ouvert, fermez-le complètement.\n"+
+			"Lancez-le ensuite et vérifiez que Mushcord est présent dans les paramètres."),
+		InfoModal("#unpatched", "Désinstallation Réussie", "Discord a été remis à neuf !"),
+		InfoModal("#scuffed-install", "Attention !", "Votre installation de Discord semble corrompue ou mal placée.\n"+
+			"Veuillez supprimer les dossiers 'Discord' ou 'Squirrel' dans le dossier qui va s'ouvrir, puis réinstallez Discord."),
+		RawInfoModal("#openasar-confirm", "OpenAsar", "OpenAsar est une alternative open-source.\n"+
+			"Mushcord n'est pas affilié à OpenAsar. Installation à vos risques et périls.\n\n"+
+			"Pour continuer, cliquez sur Accepter puis sur 'Installer OpenAsar' à nouveau.", true),
+		InfoModal("#openasar-patched", "OpenAsar Installé", "Vérifiez l'installation après avoir relancé Discord !"),
+		InfoModal("#openasar-unpatched", "OpenAsar Retiré", "Discord est revenu à sa version d'origine."),
+		InfoModal("#invalid-custom-location", "Emplacement Invalide", "Ce dossier ne contient pas une version valide de Discord."),
 		InfoModal("#modal"+strconv.Itoa(modalId), modalTitle, modalMessage),
 
 		UpdateModal(),
@@ -631,38 +602,35 @@ func loop() {
 		Layout(
 			g.Align(g.AlignCenter).To(
 				g.Style().SetFontSize(40).To(
-					g.Label("Equilotl"),
+					g.Label("Mushcord Installer"),
 				),
 			),
 
 			g.Dummy(0, 20),
 			g.Style().SetFontSize(20).To(
 				g.Row(
-					g.Label(Ternary(IsDevInstall, "Dev Install: ", "Equicord will be downloaded to: ")+EquicordDirectory),
+					g.Label("Mushcord sera téléchargé dans : "+EquicordDirectory),
 					g.Style().
 						SetColor(g.StyleColorButton, DiscordBlue).
 						SetStyle(g.StyleVarFramePadding, 4, 4).
 						To(
-							g.Button("Open Directory").OnClick(func() {
+							g.Button("Ouvrir le dossier").OnClick(func() {
 								g.OpenURL("file://" + path.Dir(EquicordDirectory))
 							}),
 						),
 				),
 				&CondWidget{!IsDevInstall, func() g.Widget {
-					return g.Label("To customise this location, set the environment variable 'EQUICORD_USER_DATA_DIR' and restart me").Wrapped(true)
+					return g.Label("Pour changer cela, définissez la variable d'environnement 'EQUICORD_USER_DATA_DIR'.").Wrapped(true)
 				}, nil},
 				g.Dummy(0, 10),
-				g.Label("Equilotl Version: "+buildinfo.InstallerTag+" ("+buildinfo.InstallerGitHash+")"+Ternary(IsSelfOutdated, " - OUTDATED", "")),
-				g.Label("Local Equicord Version: "+InstalledHash),
+				g.Label("Version de l'installateur : "+buildinfo.InstallerTag+" ("+buildinfo.InstallerGitHash+")"),
+				g.Label("Version locale de Mushcord : "+InstalledHash),
 				&CondWidget{
 					GithubError == nil,
 					func() g.Widget {
-						if IsDevInstall {
-							return g.Label("Not updating Equicord due to being in DevMode")
-						}
-						return g.Label("Latest Equicord Version: " + LatestHash)
+						return g.Label("Dernière version disponible : " + LatestHash)
 					}, func() g.Widget {
-						return renderErrorCard(DiscordRed, "Failed to fetch Info from GitHub: "+GithubError.Error(), 40)
+						return renderErrorCard(DiscordRed, "Erreur GitHub : "+GithubError.Error(), 40)
 					},
 				},
 			),
